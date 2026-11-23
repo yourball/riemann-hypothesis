@@ -1349,7 +1349,9 @@ theorem rho_mono (M : Model l K) (m : ℕ) {s s' : ℕ} (h : s ≤ s') (hG : (ch
 
 theorem rho_uniq_pf : ∀ {M : Model l K} (a : (dat Amp).Ch M), M.Sm → ∀ j m x f f',
     rhoK S hS hC a j m x f → rhoK S hS hC a j m x f' → f = f' := by
-  intro M a hM j m x f f' ⟨_, s₀, h⟩ ⟨_, s₀', h'⟩
+  intro M a hM j m x f f' hρ₁ hρ₂
+  obtain ⟨_, s₀, h⟩ := hρ₁
+  obtain ⟨_, s₀', h'⟩ := hρ₂
   obtain ⟨s₁, hg⟩ := chK_good S hS hC M hM m
   exact _root_.GlobalTheory.CompanionTheory.KapUniq.rho_unique (chK S hS hC M m (max s₁ (max s₀ s₀'))) (hg _ (le_max_left _ _)) _ f f'
     (h _ (le_trans (le_max_left _ _) (le_max_right _ _))) (h' _ (le_trans (le_max_right _ _) (le_max_right _ _)))
@@ -1367,24 +1369,29 @@ theorem rho_ex_pf : ∀ {M : Model l K} (a : (dat Amp).Ch M), M.Sm → ∀ j m x
 
 theorem rho_add_pf : ∀ {M : Model l K} (a : (dat Amp).Ch M), M.Sm → ∀ j m x y f g,
     rhoK S hS hC a j m x f → rhoK S hS hC a j m y g → rhoK S hS hC a j m (x + y) (f + g) := by
-  intro M a hM j m x y f g ⟨_, s₀, h⟩ ⟨_, s₀', h'⟩
+  intro M a hM j m x y f g hρ₁ hρ₂
+  obtain ⟨_, s₀, h⟩ := hρ₁
+  obtain ⟨_, s₀', h'⟩ := hρ₂
   exact ⟨hM, max s₀ s₀', fun s hs => _root_.GlobalTheory.CompanionTheory.KapRho.rho_add (chK S hS hC M m s) _ _ f g
     (h s (le_trans (le_max_left _ _) hs)) (h' s (le_trans (le_max_right _ _) hs))⟩
 
 theorem rho_smul_pf : ∀ {M : Model l K} (a : (dat Amp).Ch M), M.Sm → ∀ j m (c : (per l K).A) x f, rhoK S hS hC a j m x f →
     rhoK S hS hC a j m (c • x) ((AddMonoidHom.mulLeft ((S.L m).ι ((S.L m).lam c))).comp f) := by
-  intro M a hM j m c x f ⟨_, s₀, h⟩
+  intro M a hM j m c x f hρ₁
+  obtain ⟨_, s₀, h⟩ := hρ₁
   exact ⟨hM, s₀, fun s hs => _root_.GlobalTheory.CompanionTheory.KapChain.rho_smul (chK S hS hC M m s) c _ f (h s hs)⟩
 
 theorem rho_lin'_pf : ∀ {M : Model l K} (a : (dat Amp).Ch M), M.Sm → ∀ j m x f, rhoK S hS hC a j m x f →
     ∀ (k : K) φ, f (k • φ) = algebraMap K (S.L m).B k * f φ := by
-  intro M a hM j m x f ⟨_, s₀, h⟩ k φ
+  intro M a hM j m x f hρ₁ k φ
+  obtain ⟨_, s₀, h⟩ := hρ₁
   exact (h s₀ le_rfl).1 k φ
 
 theorem rho_fil_pf : ∀ {M : Model l K} (a : (dat Amp).Ch M), M.Sm → ∀ j m x f, rhoK S hS hC a j m x f → ∀ n r : ℕ, n ≤ m →
     (dat Amp).fil a j n x → ∀ φ : Module.Dual K (HdR M.q j), (∀ h ∈ FilR M.q j (r + 1), φ h = 0) →
       f φ ∈ pdP (S.L m).γB (n - r) := by
-  intro M a hM j m x f ⟨_, s₀, h⟩ n r hnm hfil φ hφ
+  intro M a hM j m x f hρ₁ n r hnm hfil φ hφ
+  obtain ⟨_, s₀, h⟩ := hρ₁
   obtain ⟨U⟩ := cov_sm_pf M hM
   have hU : ∀ α, U.d α + (m + 1) ≤ max s₀ (Finset.univ.sup U.d + (m + 1)) := fun α => by
     have := Finset.le_sup (f := U.d) (Finset.mem_univ α)
@@ -1394,7 +1401,8 @@ theorem rho_fil_pf : ∀ {M : Model l K} (a : (dat Amp).Ch M), M.Sm → ∀ j m 
 
 theorem rho_firstChern_formula : ∀ {M : Model l K} (a : (dat Amp).Ch M), M.Sm → ∀ m x f c, rhoK S hS hC a 2 m x f → (dat Amp).c1H a x →
     IsFirstChernDeRham _ (lineK a.1) c → ∀ φ, f φ = algebraMap K (S.L m).B (φ c) := by
-  intro M a hM m x f c ⟨_, s₀, h⟩ hx hc φ
+  intro M a hM m x f c hρ₁ hx hc φ
+  obtain ⟨_, s₀, h⟩ := hρ₁
   obtain ⟨U⟩ := cov_sm_pf M hM
   obtain ⟨s₁, hg⟩ := chK_good S hS hC M hM m
   have hU : ∀ α, U.d α + (m + 1) ≤ max (max s₀ s₁) (Finset.univ.sup U.d + (m + 1)) := fun α => by
@@ -1516,7 +1524,8 @@ theorem lev_good (M : Model l K) (m s : ℕ) : (homLev S hS m M s (qb_le (hS.lev
 
 theorem rho_lev_pf : ∀ {M : Model l K} (a : (dat Amp).Ch M), M.Sm → ∀ j m x f,
     rhoK S hS hC a j (m + 1) x f → rhoK S hS hC a j m x ((S.dB m).toAddMonoidHom.comp f) := by
-  intro M a hM j m x f ⟨hM', s₀, hs₀⟩
+  intro M a hM j m x f hρ₁
+  obtain ⟨hM', s₀, hs₀⟩ := hρ₁
   refine ⟨hM', ?_⟩
   obtain ⟨s₁, hs₁⟩ := chK_good S hS hC M hM (m + 1)
   obtain ⟨s₂, hs₂⟩ := chK_good S hS hC M hM m
@@ -1530,7 +1539,8 @@ theorem rho_lev_pf : ∀ {M : Model l K} (a : (dat Amp).Ch M), M.Sm → ∀ j m 
 
 theorem rho_act_of (hG : ∀ (M : Model l K) m s g, (homGal (hS.lev m) g M s (qb_le (hS.lev m) M s) (rHof (dOf S hS hC m) (hcOf S hS hC m) M s)).Good) : ∀ {M : Model l K} (a : (dat Amp).Ch M), M.Sm → ∀ j m (g : K.fixingSubgroup) x f,
     rhoK S hS hC a j m x f → rhoK S hS hC a j m (((dat Amp).H a).act j g x) (((S.L m).σB g).toAddMonoidHom.comp f) := by
-  intro M a hM j m g x f ⟨hM', s₀, hs₀⟩
+  intro M a hM j m g x f hρ₁
+  obtain ⟨hM', s₀, hs₀⟩ := hρ₁
   obtain ⟨s₁, hs₁⟩ := chK_good S hS hC M hM m
   refine ⟨hM', max s₀ s₁, fun s hs => ?_⟩
   exact _root_.GlobalTheory.CompanionTheory.KapRhoHom.rho_hom (chK S hS hC M m s) (chK S hS hC M m s) (homGal (hS.lev m) g M s (qb_le (hS.lev m) M s) (rHof (dOf S hS hC m) (hcOf S hS hC m) M s))
@@ -1540,7 +1550,9 @@ theorem rho_nat_of (hP : ∀ (M N : Model l K) (u : M.X ⟶ N.X) (hu : u ≫ N.p
     (homPull (hS.lev m) u hu s (qb_le (hS.lev m) N s) (qb_le (hS.lev m) M s) (rHof (dOf S hS hC m) (hcOf S hS hC m) N s) (rHof (dOf S hS hC m) (hcOf S hS hC m) M s)).Good) : ∀ {M N : Model l K} {u : M.X ⟶ N.X} {hu : u ≫ N.p = M.p} {a : (dat Amp).Ch M} {b : (dat Amp).Ch N}
     (μ : (dat Amp).Mo u hu a b), M.Sm → N.Sm → ∀ j m x f f', rhoK S hS hC b j m x f → rhoK S hS hC a j m ((dat Amp).pullH μ j x) f' →
       ∀ φ, f' φ = f (φ ∘ₗ pullR j (Model.genMap u hu) (Model.genMap_q u hu)) := by
-  intro M N u hu a b μ hM hN j m x f f' ⟨_, s₀, h₀⟩ ⟨_, s₀', h₀'⟩ φ
+  intro M N u hu a b μ hM hN j m x f f' hρ₁ hρ₂ φ
+  obtain ⟨_, s₀, h₀⟩ := hρ₁
+  obtain ⟨_, s₀', h₀'⟩ := hρ₂
   obtain ⟨s₁, hs₁⟩ := chK_good S hS hC M hM m
   obtain ⟨s₂, hs₂⟩ := chK_good S hS hC N hN m
   obtain ⟨s, e0, e1, e2, e3⟩ : ∃ s, s₀ ≤ s ∧ s₀' ≤ s ∧ s₁ ≤ s ∧ s₂ ≤ s := ⟨s₀ + s₀' + s₁ + s₂, by omega⟩
@@ -1552,7 +1564,8 @@ theorem rho_nat_of (hP : ∀ (M N : Model l K) (u : M.X ⟶ N.X) (hu : u ≫ N.p
 
 theorem rho_one_of (hU : ∀ (M : Model l K) m s, (cupOf (hS.lev m) M s (qb_le (hS.lev m) M s) (rHof (dOf S hS hC m) (hcOf S hS hC m) M s)).Good) : ∀ {M : Model l K} (a : (dat Amp).Ch M), M.Sm → ∀ m x f, rhoK S hS hC a 0 m x f → ((dat Amp).H a).one x →
     ∀ φ, f φ = algebraMap K (S.L m).B (φ (oneK M.q)) := by
-  intro M a hM m x f ⟨_, s₀, h₀⟩ hx φ
+  intro M a hM m x f hρ₁ hx φ
+  obtain ⟨_, s₀, h₀⟩ := hρ₁
   obtain ⟨s₁, hs₁⟩ := chK_good S hS hC M hM m
   obtain ⟨s, e0, e1⟩ : ∃ s, s₀ ≤ s ∧ s₁ ≤ s := ⟨s₀ + s₁, by omega⟩
   have h := h₀ s e0
