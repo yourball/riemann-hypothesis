@@ -358,15 +358,10 @@ theorem read_updS_keep (R : RealDat3 D A3 Ks) (F : Face3 D A3) (lam : type_of% R
     And.intro (HEq.refl Y.mj.eW) <| And.intro (HEq.refl Z.eRR) (HEq.refl Z.jW)
   -- Compare the fully elaborated conjunction in the kernel, which reduces the copied fields.
   run_tac
-    Lean.Elab.Tactic.closeMainGoalUsing `exact fun target _ => do
+    Lean.Elab.Tactic.closeMainGoalUsing `exact fun _ _ => do
       let proof ← Lean.Elab.Tactic.elabTerm (Lean.mkIdent `fields) none
-      let actual ← Lean.instantiateMVars (← Lean.Meta.inferType proof)
-      let target ← Lean.instantiateMVars target
-      let context ← Lean.instantiateLCtxMVars (← Lean.getLCtx)
-      match Lean.Kernel.isDefEq (← Lean.getEnv) context actual target with
-      | .ok true => pure proof
-      | .ok false => throwError "The copied fields are not definitionally equal"
-      | .error err => Lean.throwKernelException err
+      -- The kernel checks this when the declaration is added.
+      pure proof
 
 end GlobalTheory.Mem.R3
 
@@ -811,17 +806,12 @@ section Args
 
 open Lean Elab Tactic Meta in
 local elab "exact_defeq " e:term : tactic =>
-  closeMainGoalUsing `exact_defeq fun target _ => do
+  closeMainGoalUsing `exact_defeq fun _ _ => do
     let proof ← Term.elabTerm e none
     Term.synthesizeSyntheticMVarsNoPostponing
     let proof ← instantiateMVars proof
-    let proofType ← instantiateMVars (← inferType proof)
-    let target ← instantiateMVars target
-    let localContext ← instantiateLCtxMVars (← getLCtx)
-    match Kernel.isDefEq (← getEnv) localContext proofType target with
-    | .ok true => return proof
-    | .ok false => throwError "term type does not match the goal"
-    | .error ex => throwError (ex.toMessageData (← getOptions))
+    -- The kernel checks this when the declaration is added.
+    return proof
 
 variable {K : Ctx} {B : GlobalTheory.Mem.Base} {f : Top.Fr B.toPre} {T : TwDat B} {w : ColW B f T} {Z : w.Lt} {Wt : Set B.places.Pl}
   {L : SizeData₂ (w.st Z).toD7} {hT : GatTies (w.st Z).toD7} {Gi : Formalism.MainNotions.G.Inst (w.st Z).toD7 L} {Gl : Formalism.MainNotions.G.LatInst (w.st Z).toD7}

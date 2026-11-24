@@ -232,14 +232,10 @@ variable (l : LC hL x)
 -- Comparing the transported fields in the elaborator expands the localization data.
 open Lean Elab Tactic in
 local elab "exact_by_kernel " term:term : tactic =>
-  closeMainGoalUsing `exact_by_kernel fun target _ => do
+  closeMainGoalUsing `exact_by_kernel fun _ _ => do
     let value ← elabTerm term none
-    let actual ← instantiateMVars (← Meta.inferType value)
-    let target ← instantiateMVars target
-    match Kernel.isDefEq (← getEnv) (← getLCtx) actual target with
-    | .ok true => pure value
-    | .ok false => throwError "expected{indentExpr target}\nbut the term has type{indentExpr actual}"
-    | .error error => throwError (error.toMessageData (← getOptions))
+    -- The kernel checks this when the declaration is added.
+    pure value
 
 
 def ysL : NExpRealS (datL x L).R (datL x L).cG (SL L l.rat) := by

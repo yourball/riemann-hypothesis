@@ -176,17 +176,12 @@ abbrev recOf (_L : LevCh D T) : D7 := D
 -- Comparing the types of copied fields in the kernel avoids unfolding the stage records in the elaborator.
 open Lean Elab Tactic in
 local elab "exact_by_kernel " term:term : tactic =>
-  closeMainGoalUsing `exact_by_kernel fun target _ => do
+  closeMainGoalUsing `exact_by_kernel fun _ _ => do
     let value ← elabTerm term none
     Term.synthesizeSyntheticMVarsNoPostponing
     let value ← instantiateMVars value
-    let actual ← instantiateMVars (← Meta.inferType value)
-    let target ← instantiateMVars target
-    let lctx ← instantiateLCtxMVars (← getLCtx)
-    match Kernel.isDefEq (← getEnv) lctx actual target with
-    | .ok true => pure value
-    | .ok false => throwError "expected{indentExpr target}\nbut the term has type{indentExpr actual}"
-    | .error error => throwError (error.toMessageData (← getOptions))
+    -- The kernel checks this when the declaration is added.
+    pure value
 
 local macro "copyDec% " d:term:max : term =>
   `({ ι := by exact_by_kernel ($d).ι

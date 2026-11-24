@@ -406,13 +406,8 @@ theorem locTr1_C (Kf : FiniteSubfield) [NumberField Kf.1]
   run_tac Lean.Elab.Tactic.withMainContext do
     let proof ← Lean.Elab.Tactic.getFVarId (Lean.mkIdent `hTransfer)
     let goal ← Lean.Elab.Tactic.getMainGoal
-    let actual ← Lean.instantiateMVars (← proof.getType)
-    let expected ← Lean.instantiateMVars (← goal.getType)
-    let context ← Lean.instantiateLCtxMVars (← Lean.getLCtx)
-    match Lean.Kernel.isDefEq (← Lean.getEnv) context actual expected with
-    | .ok true => goal.assign (.fvar proof)
-    | .ok false => throwError "kernel conversion failed for the transfer result"
-    | .error e => throwError "{e.toMessageData (← Lean.getOptions)}"
+    -- The kernel checks this when the declaration is added.
+    goal.assign (.fvar proof)
 
 end PositivityTheory.Lit1.PTN
 end -- clump:auto

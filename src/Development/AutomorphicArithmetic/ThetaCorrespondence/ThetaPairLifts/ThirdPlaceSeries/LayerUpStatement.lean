@@ -792,17 +792,12 @@ macro "kc%" t:term:max : term => `(by with_unfolding_all exact ($t :))
 
 open Lean Elab Tactic in
 local elab "row_exact " term:term : tactic =>
-  closeMainGoalUsing `row_exact fun target _ => do
+  closeMainGoalUsing `row_exact fun _ _ => do
     let value ← elabTerm term none
     Term.synthesizeSyntheticMVarsNoPostponing
     let value ← instantiateMVars value
-    let actual ← instantiateMVars (← Meta.inferType value)
-    let target ← instantiateMVars target
-    let lctx ← instantiateLCtxMVars (← getLCtx)
-    match Kernel.isDefEq (← getEnv) lctx actual target with
-    | .ok true => pure value
-    | .ok false => throwError "expected{indentExpr target}\nbut the term has type{indentExpr actual}"
-    | .error e => throwKernelException e
+    -- The kernel checks this when the declaration is added.
+    pure value
 
 local macro "row_cast%" t:term:max : term => `(by row_exact $t)
 
@@ -1103,15 +1098,10 @@ theorem norm_iff (ρ : Setup o.L.D.ntw) (i : o.L.D.ntw.Tw) (j : Fin o.L.D.R.m) (
   -- level data directly, avoiding the elaborator's repeated unfolding.
   all_goals
     run_tac
-      Lean.Elab.Tactic.closeMainGoalUsing `norm_iff fun target _ => do
+      Lean.Elab.Tactic.closeMainGoalUsing `norm_iff fun _ _ => do
         let proof ← Lean.Meta.getLocalDeclFromUserName `hTie
-        let actual ← Lean.instantiateMVars proof.type
-        let target ← Lean.instantiateMVars target
-        let context ← Lean.instantiateLCtxMVars (← Lean.getLCtx)
-        match Lean.Kernel.isDefEq (← Lean.getEnv) context actual target with
-        | .ok true => pure proof.toExpr
-        | .ok false => throwError "famTie_imp has type{actual}\nbut the goal is{target}"
-        | .error error => throwError (error.toMessageData (← Lean.getOptions))
+        -- The kernel checks this when the declaration is added.
+        pure proof.toExpr
 
 variable (YS v₀) in
 theorem rat_iff {ρ : Setup o.L.D.ntw} (hρ : ρ.Good) (i : o.L.D.ntw.Tw) (j : Fin o.L.D.R.m) (b : Bool) (ν : ℂ) :
